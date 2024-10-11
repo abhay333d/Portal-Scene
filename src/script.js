@@ -4,6 +4,12 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
+// /**
+//  * Spector js
+//  */
+// const SPECTOR = require("spectorjs");
+// const spector = new SPECTOR.Spector();
+// spector.displayUI();
 /**
  * Base
  */
@@ -55,9 +61,7 @@ const poleLightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffe5 });
  * Model
  */
 gltfLoader.load("./model-2/portal-final.glb", (gltf) => {
-  gltf.scene.traverse((child) => {
-    child.material = bakedMaterial;
-  });
+  const bakedMesh = gltf.scene.children.find((child) => child.name === "baked");
 
   const portalLightMesh = gltf.scene.children.find(
     (child) => child.name === "protalLight"
@@ -68,6 +72,7 @@ gltfLoader.load("./model-2/portal-final.glb", (gltf) => {
   const poleLightBMesh = gltf.scene.children.find(
     (child) => child.name === "poleLightB"
   );
+  bakedMesh.material = bakedMaterial;
   portalLightMesh.material = portalLightMaterial;
   poleLightAMesh.material = poleLightMaterial;
   poleLightBMesh.material = poleLightMaterial;
