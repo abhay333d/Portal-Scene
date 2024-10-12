@@ -14,6 +14,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
  * Base
  */
 // Debug
+const debugObject = {};
 const gui = new GUI({
   width: 400,
 });
@@ -81,6 +82,34 @@ gltfLoader.load("./model-2/portal-final.glb", (gltf) => {
 });
 
 /**
+ * FireFlies
+ */
+//Geometry
+const fireFliesGeometry = new THREE.BufferGeometry();
+const fireFliesCount = 30;
+const positionArray = new Float32Array(fireFliesCount * 3);
+
+for (let i = 0; i < fireFliesCount; i++) {
+  positionArray[i * 3 + 0] = (Math.random() - 0.5) * 4;
+  positionArray[i * 3 + 1] = Math.random() * 2;
+  positionArray[i * 3 + 2] = (Math.random() - 0.5) * 4;
+}
+fireFliesGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(positionArray, 3)
+);
+
+//Materials
+const fireFliesMaterial = new THREE.PointsMaterial({
+  size: 0.1,
+  sizeAttenuation: true,
+});
+
+//Points
+const fireFlies = new THREE.Points(fireFliesGeometry, fireFliesMaterial);
+scene.add(fireFlies);
+
+/**
  * Sizes
  */
 const sizes = {
@@ -130,6 +159,12 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+debugObject.clearColor = "#0C090A";
+renderer.setClearColor(debugObject.clearColor);
+gui.addColor(debugObject, "clearColor").onChange(() => {
+  renderer.setClearColor(debugObject.clearColor);
+});
 
 /**
  * Animate
