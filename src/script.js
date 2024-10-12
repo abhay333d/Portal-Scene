@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import fireFliesVertexShader from "./shaders/fireFlies/vertex.glsl";
+import fireFliesFragmentShader from "./shaders/fireFlies/fragment.glsl";
 
 // /**
 //  * Spector js
@@ -88,22 +90,40 @@ gltfLoader.load("./model-2/portal-final.glb", (gltf) => {
 const fireFliesGeometry = new THREE.BufferGeometry();
 const fireFliesCount = 30;
 const positionArray = new Float32Array(fireFliesCount * 3);
+const scaleArray = new Float32Array(fireFliesCount);
 
 for (let i = 0; i < fireFliesCount; i++) {
   positionArray[i * 3 + 0] = (Math.random() - 0.5) * 4;
   positionArray[i * 3 + 1] = Math.random() * 2;
   positionArray[i * 3 + 2] = (Math.random() - 0.5) * 4;
+
+  scaleArray[i] = Math.random();
 }
 fireFliesGeometry.setAttribute(
   "position",
   new THREE.BufferAttribute(positionArray, 3)
 );
-
+fireFliesGeometry.setAttribute(
+  "aScale",
+  new THREE.BufferAttribute(scaleArray, 1)
+);
 //Materials
-const fireFliesMaterial = new THREE.PointsMaterial({
-  size: 0.1,
-  sizeAttenuation: true,
+const fireFliesMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 0 },
+    uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+    uSize: { value: 100 },
+  },
+  vertexShader: fireFliesVertexShader,
+  fragmentShader: fireFliesFragmentShader,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
 });
+
+gui
+  .add(fireFliesMaterial.uniforms.uSize, "value", 0, 500, 1)
+  .name("FireFliesSize");
 
 //Points
 const fireFlies = new THREE.Points(fireFliesGeometry, fireFliesMaterial);
@@ -129,6 +149,12 @@ window.addEventListener("resize", () => {
   // Update renderer
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  //Update fireflies
+  fireFliesMaterial.uniforms.uPixelRatio.value = Math.min(
+    window.devicePixelRatio,
+    2
+  );
 });
 
 /**
@@ -173,6 +199,8 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  fireFliesMaterial.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
