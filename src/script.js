@@ -5,6 +5,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import fireFliesVertexShader from "./shaders/fireFlies/vertex.glsl";
 import fireFliesFragmentShader from "./shaders/fireFlies/fragment.glsl";
+import portalVertexShader from "./shaders/portal/vertex.glsl";
+import portalFragmentShader from "./shaders/portal/fragment.glsl";
 
 // /**
 //  * Spector js
@@ -44,7 +46,7 @@ gltfLoader.setDRACOLoader(dracoLoader);
 /**
  * Textures
  */
-const bakedTexture = textureLoader.load("./model-2/baked-2.jpg");
+const bakedTexture = textureLoader.load("./model-2/bakedScene.jpg");
 bakedTexture.flipY = false;
 bakedTexture.colorSpace = THREE.SRGBColorSpace;
 
@@ -54,11 +56,32 @@ bakedTexture.colorSpace = THREE.SRGBColorSpace;
 //Baked materials
 const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture });
 
-//portal Light Material
-const portalLightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
 //PoleLight Material
-const poleLightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffe5 });
+const poleLightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+//portal Light Material
+debugObject.portalColorStart = "#a2958b";
+debugObject.portalColorEnd = "#00010a";
+
+gui.addColor(debugObject, "portalColorStart").onChange(() => {
+  portalLightMaterial.uniforms.uColorStart.value.set(
+    debugObject.portalColorStart
+  );
+});
+gui.addColor(debugObject, "portalColorEnd").onChange(() => {
+  portalLightMaterial.uniforms.uColorEnd.value.set(
+    debugObject.portalColorEnd
+  );
+});
+const portalLightMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 0 },
+    uColorStart: { value: new THREE.Color(debugObject.portalColorStart) },
+    uColorEnd: { value: new THREE.Color(debugObject.portalColorEnd) },
+  },
+  vertexShader: portalVertexShader,
+  fragmentShader: portalFragmentShader,
+});
 
 /**
  * Model
@@ -201,6 +224,7 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
   fireFliesMaterial.uniforms.uTime.value = elapsedTime;
+  portalLightMaterial.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
